@@ -31,7 +31,7 @@ func (a *AuthRepository) RegisterUser(user models.User) error {
 	}()
 
 	// Attempt to insert user
-	_, err = tx.Exec("INSERT INTO user (userName, email, name, hashedPassword, createdAt) VALUES (?, ?, ?)", user.UserName, user.Email, user.Name, user.HashedPassword, user.CreatedAt)
+	_, err = tx.Exec("INSERT INTO user (userName, id, email, name, hashedPassword, createdAt) VALUES (?, ?, ?, ?, ?, ?)", user.UserName, user.ID, user.Email, user.Name, user.HashedPassword, user.CreatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
 			log.Println("User already exists:", user)
@@ -49,7 +49,7 @@ func (a *AuthRepository) RegisterUser(user models.User) error {
 	return nil
 }
 
-func (a *AuthRepository) Login(userId string) (*models.User, error) {
+func (a *AuthRepository) Login(userName string) (*models.User, error) {
 	var user models.User
 
 	// Prepare and execute the SQL statement
@@ -60,7 +60,7 @@ func (a *AuthRepository) Login(userId string) (*models.User, error) {
 	defer stmt.Close()
 
 	// Execute the query
-	err = stmt.QueryRow(userId).Scan(&user.UserName, &user.Email, &user.Name, &user.HashedPassword, &user.CreatedAt)
+	err = stmt.QueryRow(userName).Scan(&user.UserName, &user.Email, &user.Name, &user.HashedPassword, &user.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("user not found")

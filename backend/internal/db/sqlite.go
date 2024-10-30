@@ -28,11 +28,12 @@ func createTables(db *sql.DB) error {
 func createUserTable(db *sql.DB) error {
 	// Create user table
 	createUserTableSQL := `CREATE TABLE IF NOT EXISTS user (
-		"UserId" TEXT PRIMARY KEY,         -- Unique UserId for the user (acts as the primary key)
-		"Email" TEXT UNIQUE,               -- Unique email address for the user
-		"Name" TEXT,                       -- Name of the user
-		"Password" TEXT,                   -- Hashed password for authentication
-		"CreatedAt" DATETIME               -- Time of creating user
+		"userName" TEXT PRIMARY KEY,       -- Unique UserId for the user (acts as the primary key)
+		"id" TEXT UNIQUE,                  -- Unique ID for the user
+		"email" TEXT UNIQUE,               -- Unique email address for the user
+		"name" TEXT,                       -- Name of the user
+		"hashedPassword" TEXT,             -- Hashed password for authentication
+		"createdAt" DATETIME               -- Time of creating user
 	);`
 	_, err := db.Exec(createUserTableSQL)
 	if err != nil {

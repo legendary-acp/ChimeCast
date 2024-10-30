@@ -53,7 +53,7 @@ func (a *AuthService) Login(request *models.LoginRequest) (string, error) {
 	}
 
 	// Generate session
-	sessionID, err := a.SessionManager.CreateSession(user.Email)
+	sessionID, err := a.SessionManager.CreateSession(user.UserName)
 	if err != nil {
 		return "", errors.New("could not create session")
 	}

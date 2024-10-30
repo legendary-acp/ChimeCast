@@ -9,7 +9,7 @@ import (
 )
 
 type Session struct {
-	Email     string
+	UserName  string
 	ExpiresAt time.Time
 }
 
@@ -25,13 +25,13 @@ func NewSessionManager() *SessionManager {
 }
 
 // CreateSession generates a new session for the given email
-func (sm *SessionManager) CreateSession(email string) (string, error) {
+func (sm *SessionManager) CreateSession(userName string) (string, error) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
 	sessionID := uuid.NewString()
 	sm.sessions[sessionID] = &Session{
-		Email:     email,
+		UserName:  userName,
 		ExpiresAt: time.Now().Add(24 * time.Hour), // Session expires after 24 hours
 	}
 
