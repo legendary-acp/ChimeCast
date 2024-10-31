@@ -26,10 +26,12 @@ func main() {
 	sessionManager := session.NewSessionManager()
 
 	authRepository := repositories.NewAuthRepository(db)
+	roomRepository := repositories.NewRoomRepositor(db)
 
 	authService := service.NewAuthService(authRepository, sessionManager)
+	roomService := service.NewRoomService(roomRepository)
 
-	router := api.NewRouter(authService)
+	router := api.NewRouter(authService, roomService, sessionManager)
 
 	handlerWithCors := middleware.CorsMiddleware(router)
 	server := &http.Server{

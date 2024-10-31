@@ -3,16 +3,11 @@ package utils
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 )
-
-func GenerateAgentName(typ string, version string, hostname string) string {
-	return fmt.Sprintf("%s_%s@%s", typ, version, hostname)
-}
 
 var ErrUserAlreadyExists = errors.New("user already exists")
 
@@ -33,22 +28,6 @@ func WriteJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) 
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-}
-
-func UnmarshalJSONRequest(r *http.Request, v interface{}) error {
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		return err
-	}
-	defer r.Body.Close()
-	return nil
-}
-
-func UnmarshalJSONResponse(r *http.Response, v interface{}) error {
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		return err
-	}
-	defer r.Body.Close()
-	return nil
 }
 
 func SendJSONError(w http.ResponseWriter, statusCode int, errMsg string) {
@@ -81,5 +60,5 @@ func SendJSONError(w http.ResponseWriter, statusCode int, errMsg string) {
 }
 
 func CreateNewUUID() string {
-	return uuid.New().String()
+	return uuid.NewString()
 }

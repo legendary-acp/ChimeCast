@@ -11,3 +11,7 @@ type LoginRequest struct {
 	UserId   string `json:"userId"`
 	Password string `json:"password"`
 }
+
+type CreateRoomRequest struct {
+	Name string `json:"name"`
+}

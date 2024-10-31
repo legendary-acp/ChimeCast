@@ -13,13 +13,13 @@ import (
 
 func NewAuthRepository(db *sql.DB) *AuthRepository {
 	return &AuthRepository{
-		db: db,
+		DB: db,
 	}
 }
 
 func (a *AuthRepository) RegisterUser(user models.User) error {
 	// Use transaction to handle user creation
-	tx, err := a.db.Begin()
+	tx, err := a.DB.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
@@ -31,7 +31,7 @@ func (a *AuthRepository) RegisterUser(user models.User) error {
 	}()
 
 	// Attempt to insert user
-	_, err = tx.Exec("INSERT INTO user (userName, id, email, name, hashedPassword, createdAt) VALUES (?, ?, ?, ?, ?, ?)", user.UserName, user.ID, user.Email, user.Name, user.HashedPassword, user.CreatedAt)
+	_, err = tx.Exec("INSERT INTO users (userName, id, email, name, hashedPassword, createdAt) VALUES (?, ?, ?, ?, ?, ?)", user.UserName, user.ID, user.Email, user.Name, user.HashedPassword, user.CreatedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
 			log.Println("User already exists:", user)
@@ -53,7 +53,7 @@ func (a *AuthRepository) Login(userName string) (*models.User, error) {
 	var user models.User
 
 	// Prepare and execute the SQL statement
-	stmt, err := a.db.Prepare("SELECT userName, email, name, hashedPassword, createdAt FROM user WHERE username = ?")
+	stmt, err := a.DB.Prepare("SELECT userName, email, name, hashedPassword, createdAt FROM users WHERE username = ?")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query: %v", err)
 	}

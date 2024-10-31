@@ -24,7 +24,7 @@ func NewSessionManager() *SessionManager {
 	}
 }
 
-// CreateSession generates a new session for the given email
+// CreateSession generates a new session for the given userName
 func (sm *SessionManager) CreateSession(userName string) (string, error) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
