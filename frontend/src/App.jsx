@@ -1,8 +1,8 @@
-import Auth from "./components/auth.JSX";
+import ToggleAuth from "./components/Auth/ToggleAuth";
 
 function App() {
   return (
-      <Auth />
+    <ToggleAuth />
   );
 }
 
