@@ -28,7 +28,7 @@ func (a *AuthService) RegisterUser(request *models.RegisterRequest) error {
 	user := models.User{
 		ID:             utils.CreateNewUUID(),
 		Name:           request.Name,
-		UserName:       request.UserId,
+		Username:       request.UserName,
 		Email:          request.Email,
 		HashedPassword: string(hashedPassword),
 		CreatedAt:      time.Now(),
@@ -42,7 +42,7 @@ func (a *AuthService) RegisterUser(request *models.RegisterRequest) error {
 }
 
 func (a *AuthService) Login(request *models.LoginRequest) (string, error) {
-	user, err := a.AuthRepository.Login(request.UserId)
+	user, err := a.AuthRepository.Login(request.UserName)
 	if err != nil {
 		return "", err
 	}
@@ -53,7 +53,7 @@ func (a *AuthService) Login(request *models.LoginRequest) (string, error) {
 	}
 
 	// Generate session
-	sessionID, err := a.SessionManager.CreateSession(user.UserName)
+	sessionID, err := a.SessionManager.CreateSession(user.Username)
 	if err != nil {
 		return "", errors.New("could not create session")
 	}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"sort"
 
 	"github.com/legendary-acp/chimecast/internal/models"
 )
@@ -36,6 +37,10 @@ func (r *RoomRepository) GetAllRooms() ([]models.Room, error) {
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+
+	sort.Slice(rooms, func(i, j int) bool {
+		return rooms[i].Status != 0 && rooms[j].Status == 0
+	})
 
 	return rooms, nil
 }

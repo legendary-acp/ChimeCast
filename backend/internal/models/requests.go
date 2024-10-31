@@ -2,13 +2,13 @@ package models
 
 type RegisterRequest struct {
 	Name     string `json:"name"`
-	UserId   string `json:"userId"`
+	UserName string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 type LoginRequest struct {
-	UserId   string `json:"userId"`
+	UserName string `json:"username"`
 	Password string `json:"password"`
 }
 

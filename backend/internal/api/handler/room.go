@@ -39,8 +39,13 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 
 	roomID, err := h.RoomService.CreateRoom(createRoomRequest)
 	if err != nil {
-		utils.SendJSONError(w, http.StatusInternalServerError, err.Error())
-		return
+		if err.Error() == "name can't be empty" {
+			utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+			return
+		} else {
+			utils.SendJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{

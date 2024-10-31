@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -22,6 +23,10 @@ func (r *RoomService) GetAllRooms() ([]models.Room, error) {
 }
 
 func (r *RoomService) CreateRoom(request *models.CreateRoomRequest) (*string, error) {
+	if request.Name == "" {
+		return nil, errors.New("name can't be empty")
+	}
+
 	var room models.Room
 
 	room.Name = request.Name

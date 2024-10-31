@@ -1,8 +1,15 @@
-import ToggleAuth from "./components/Auth/ToggleAuth";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import routes from './routes';
 
 function App() {
   return (
-    <ToggleAuth />
+    <Router>
+    <Routes>
+      {routes.map(({ path, element }, index) => (
+        <Route key={index} path={path} element={element} />
+      ))}
+    </Routes>
+  </Router>
   );
 }
 

@@ -87,7 +87,7 @@ func (a *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	// Login and get session ID
 	sessionID, err := a.AuthService.Login(&loginRequest)
 	if err != nil {
-		utils.WriteJSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "invalid credentials"})
+		utils.WriteJSONResponse(w, http.StatusUnauthorized, map[string]string{"message": "Invalid Credentials"})
 		return
 	}
 

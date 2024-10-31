@@ -16,7 +16,7 @@ func ValidateUserRegistrationRequest(request *models.RegisterRequest) error {
 	if request.Password == "" {
 		return errors.New("password cannot be empty")
 	}
-	if request.UserId == "" {
+	if request.UserName == "" {
 		return errors.New("userId cannot be empty")
 	}
 	return nil

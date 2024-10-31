@@ -34,12 +34,12 @@ func createTables(db *sql.DB) error {
 func createUserTable(db *sql.DB) error {
 	// Create user table
 	createUserTableSQL := `CREATE TABLE IF NOT EXISTS users (
-		"userName" TEXT PRIMARY KEY,       -- Unique UserId for the user (acts as the primary key)
-		"id" TEXT UNIQUE,                  -- Unique ID for the user
-		"email" TEXT UNIQUE,               -- Unique email address for the user
-		"name" TEXT,                       -- Name of the user
-		"hashedPassword" TEXT,             -- Hashed password for authentication
-		"createdAt" DATETIME               -- Time of creating user
+		"Username" TEXT PRIMARY KEY,       -- Unique UserId for the user (acts as the primary key)
+		"ID" TEXT UNIQUE,                  -- Unique ID for the user
+		"Email" TEXT UNIQUE,               -- Unique email address for the user
+		"Name" TEXT,                       -- Name of the user
+		"HashedPassword" TEXT,             -- Hashed password for authentication
+		"CreatedAt" DATETIME               -- Time of creating user
 	);`
 	_, err := db.Exec(createUserTableSQL)
 	if err != nil {
@@ -52,10 +52,10 @@ func createUserTable(db *sql.DB) error {
 func createRoomTable(db *sql.DB) error {
 	// Create rooms table
 	createRoomTableSQL := `CREATE TABLE IF NOT EXISTS rooms (
-		"id" TEXT PRIMARY KEY,          -- Unique ID for the room
-		"name" TEXT,                    -- Name of the room
-		"createdAt" DATETIME,           -- Time of creating room
-		"status" INTEGER                -- Room status: 0 for inactive, 1 for active
+		"ID" TEXT PRIMARY KEY,          -- Unique ID for the room
+		"Name" TEXT,                    -- Name of the room
+		"CreatedAt" DATETIME,           -- Time of creating room
+		"Status" INTEGER                -- Room status: 0 for inactive, 1 for active
 	);`
 	_, err := db.Exec(createRoomTableSQL)
 	if err != nil {

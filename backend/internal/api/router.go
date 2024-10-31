@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"github.com/legendary-acp/chimecast/internal/api/handler"
-	"github.com/legendary-acp/chimecast/internal/middleware"
 	"github.com/legendary-acp/chimecast/internal/service"
 	"github.com/legendary-acp/chimecast/internal/session"
 )
@@ -21,7 +20,7 @@ func NewRouter(authService *service.AuthService, roomService *service.RoomServic
 	authAPIsV1.HandleFunc("/logout", authHandler.Logout).Methods("POST")
 
 	roomAPIsV1 := router.PathPrefix("/api/room/v1").Subrouter()
-	roomAPIsV1.Use(middleware.AuthMiddleware(sessionManager))
+	//roomAPIsV1.Use(middleware.AuthMiddleware(sessionManager))
 
 	roomAPIsV1.HandleFunc("/", roomHandler.GetAllRooms).Methods("GET")
 	roomAPIsV1.HandleFunc("/", roomHandler.CreateRoom).Methods("POST")
