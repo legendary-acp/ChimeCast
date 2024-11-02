@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { fetchRooms } from "../../services/roomService";
 import CreateRoomPanel from "./CreateRoom";
 import formatTimestamp from "../../utils/dateUtils";
 
 const RoomList = () => {
+  const navigate = useNavigate();
+
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,8 +27,9 @@ const RoomList = () => {
     loadRooms();
   }, [isCreatePanelOpen]);
 
-  const handleJoin = (roomId) => {
-    console.log(`Joining room with ID: ${roomId}`);
+  const handleJoin = (room) => {
+    console.log(`Joining room with ID: ${room.id}`);
+    navigate(`/media/${room.id}`, { state: { room:room } });
   };
 
   const handleCreateRoomOpen = () => setIsCreatePanelOpen(true);
@@ -109,7 +113,7 @@ const RoomList = () => {
                   <td className="border-t border-gray-200 px-4 lg:px-6 py-4">{formatTimestamp(room.createdAt)}</td>
                   <td className="border-t border-gray-200 px-4 lg:px-6 py-4 text-center">
                     <button
-                      onClick={() => handleJoin(room.id)}
+                      onClick={() => handleJoin(room)}
                       className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition duration-200 ease-in-out shadow-md transform hover:scale-105"
                     >
                       Join
