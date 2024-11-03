@@ -71,7 +71,7 @@ const RoomList = () => {
         <h2 className="text-3xl font-bold text-gray-800">Rooms</h2>
         <button
           onClick={handleCreateRoomOpen}
-          className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition duration-200 ease-in-out shadow-md"
+          className="flex items-center px-4 py-2 bg-blue-700 hover:bg-green-500 text-white rounded-full transition duration-200 ease-in-out shadow-md hover:scale-105"
         >
           <svg
             className="w-5 h-5 mr-2"
@@ -114,7 +114,7 @@ const RoomList = () => {
                   <td className="border-t border-gray-200 px-4 lg:px-6 py-4 text-center">
                     <button
                       onClick={() => handleJoin(room)}
-                      className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition duration-200 ease-in-out shadow-md transform hover:scale-105"
+                      className="px-4 py-2 rounded-full bg-blue-700 hover:bg-green-500 text-white transition duration-200 ease-in-out shadow-md transform hover:scale-105"
                     >
                       Join
                     </button>

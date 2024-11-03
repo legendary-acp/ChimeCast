@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { 
+  SpeakerWaveIcon, 
+  SpeakerXMarkIcon,
+  VideoCameraIcon, 
+  VideoCameraSlashIcon,
+} from '@heroicons/react/24/solid';
+
 
 const MediaPreview = () => {
   const [hasVideo, setHasVideo] = useState(true);
@@ -12,6 +19,7 @@ const MediaPreview = () => {
   const animationFrameRef = useRef(null);
 
   const room = useLocation().state?.room;
+  const navigate = useNavigate();
 
   useEffect(() => {
     startMedia();
@@ -83,13 +91,27 @@ const MediaPreview = () => {
       setHasAudio((prev) => !prev);
     }
   };
+  const JoinRoom = () => {
+    console.log(`Joining room with ID: ${room.id}`);
+    navigate(`/meeting/${room.id}`, { state: { room: room } });
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800 p-4">
       <div className="bg-gray-900 p-6 rounded-lg shadow-lg text-white space-y-4">
-        <h2 className="text-xl font-bold">Media Preview</h2>
-        <h3 className="text-xl font-bold">Joining {room.name}</h3>
-
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold">
+              Media Preview for: {room.name}
+            </h2>
+          </div>
+          <button
+            onClick={JoinRoom}
+            className="flex px-4 py-2 rounded-full text-white bg-blue-700 hover:bg-green-500 hover:scale-105"
+          >
+            Join
+          </button>
+        </div>
         {/* Display any error messages */}
         {error && <div className="text-red-500">{error}</div>}
 
@@ -104,7 +126,9 @@ const MediaPreview = () => {
           />
           {!hasVideo && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <span>Video is Off</span>
+              <div className="w-20 h-20 rounded-full bg-orange-600 flex items-center justify-center text-white text-2xl">
+                J
+              </div>
             </div>
           )}
         </div>
@@ -124,79 +148,27 @@ const MediaPreview = () => {
         <div className="flex space-x-4 justify-center mt-4">
           <button
             onClick={toggleVideo}
-            className={`px-4 py-2 rounded-full text-white ${
-              hasVideo ? "bg-red-500" : "bg-green-500"
+            className={`p-4 rounded-full ${
+              hasVideo ? 'bg-gray-600 hover:bg-gray-700' : 'bg-red-600 hover:bg-red-700'
             }`}
           >
             {hasVideo ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M12 18.75H4.5a2.25 2.25 0 0 1-2.25-2.25V9m12.841 9.091L16.5 19.5m-1.409-1.409c.407-.407.659-.97.659-1.591v-9a2.25 2.25 0 0 0-2.25-2.25h-9c-.621 0-1.184.252-1.591.659m12.182 12.182L2.909 5.909M1.5 4.5l1.409 1.409"
-                />
-              </svg>
+              <VideoCameraIcon className="w-6 h-6 text-white" />
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
-                />
-              </svg>
+              <VideoCameraSlashIcon className="w-6 h-6 text-white" />
             )}
           </button>
 
           <button
             onClick={toggleAudio}
-            className={`px-4 py-2 rounded-full text-white ${
-              hasAudio ? "bg-red-500" : "bg-green-500"
+            className={`p-4 rounded-full ${
+              hasAudio ? 'bg-gray-600 hover:bg-gray-700' : 'bg-red-600 hover:bg-red-700'
             }`}
           >
             {hasAudio ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z"
-                />
-              </svg>
+              <SpeakerWaveIcon className="w-6 h-6 text-white" />
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z"
-                />
-              </svg>
+              <SpeakerXMarkIcon className="w-6 h-6 text-white" />
             )}
           </button>
         </div>
