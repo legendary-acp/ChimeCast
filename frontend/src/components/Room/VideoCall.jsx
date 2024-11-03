@@ -1,37 +1,55 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
   VideoCameraIcon,
   VideoCameraSlashIcon,
   UserGroupIcon,
-  PhoneXMarkIcon
-} from '@heroicons/react/24/solid';
+  PhoneXMarkIcon,
+} from "@heroicons/react/24/solid";
+import useWebRTC from "../../hooks/useWebSocket";
 
 const VideoMeetingRoom = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isVideoOn, setIsVideoOn] = useState(true);
-  const meetingName = "Project Sync"; // This would come from props or context
+  const room = useLocation().state?.room;
+  const { localVideoRef, remoteVideoRef, leaveCall } = useWebRTC(
+    isVideoOn,
+    isMicOn,
+    room.id
+  );
 
-  const toggleMic = () => setIsMicOn(!isMicOn);
-  const toggleVideo = () => setIsVideoOn(!isVideoOn);
-  const handleLeave = () => {
-    // Handle leave meeting logic here
-    console.log('Leaving meeting...');
+  const toggleVideo = () => {
+    if (localVideoRef.current && localVideoRef.current.srcObject) {
+      localVideoRef.current.srcObject
+        .getVideoTracks()
+        .forEach((track) => (track.enabled = !track.enabled));
+      setIsVideoOn(!isVideoOn);
+    }
+  };
+
+  const toggleMic = () => {
+    if (localVideoRef.current && localVideoRef.current.srcObject) {
+      localVideoRef.current.srcObject
+        .getAudioTracks()
+        .forEach((track) => (track.enabled = !track.enabled));
+      setIsMicOn(!isMicOn);
+    }
   };
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col">
       {/* Header */}
       <header className="bg-gray-800 p-4 flex items-center justify-between">
-        <h1 className="text-white text-xl font-semibold">{meetingName}</h1>
+        <h1 className="text-white text-xl font-semibold">{room.name}</h1>
         <div className="flex items-center space-x-6">
           <div className="flex items-center text-gray-300">
             <UserGroupIcon className="w-5 h-5 mr-2" />
-            <span>4</span>
+            <span>2</span>
           </div>
           <button
-            onClick={handleLeave}
+            onClick={leaveCall}
             className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center justify-center transition-colors"
           >
             <PhoneXMarkIcon className="w-5 h-5 text-white" />
@@ -46,26 +64,31 @@ const VideoMeetingRoom = () => {
         <div className="grid grid-cols-2 gap-4 h-full">
           {/* Main video */}
           <div className="bg-gray-800 rounded-lg relative">
-            {isVideoOn ? (
-              <div className="absolute bottom-4 left-4 bg-gray-900 px-2 py-1 rounded text-white text-sm">
-                You
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl">
-                  Y
+            <video
+              ref={localVideoRef}
+              autoPlay
+              muted
+              className="w-full h-full rounded-lg"
+            />
+            {!isVideoOn && (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <div className="w-20 h-20 rounded-full bg-orange-600 flex items-center justify-center text-white text-2xl">
+                  P
                 </div>
               </div>
             )}
+            <div className="absolute bottom-4 left-4 bg-gray-900 px-2 py-1 rounded text-white text-sm">
+              You
+            </div>
           </div>
-          
+
           {/* Other participants */}
           <div className="bg-gray-800 rounded-lg relative">
-            <div className="h-full flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-gray-600 flex items-center justify-center text-white text-2xl">
-                J
-              </div>
-            </div>
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              className="w-full h-full rounded-lg"
+            />
             <div className="absolute bottom-4 left-4 bg-gray-900 px-2 py-1 rounded text-white text-sm">
               John
             </div>
@@ -80,7 +103,9 @@ const VideoMeetingRoom = () => {
           <button
             onClick={toggleMic}
             className={`p-4 rounded-full ${
-              isMicOn ? 'bg-gray-600 hover:bg-gray-700' : 'bg-red-600 hover:bg-red-700'
+              isMicOn
+                ? "bg-gray-600 hover:bg-gray-700"
+                : "bg-red-600 hover:bg-red-700"
             } transition-colors`}
           >
             {isMicOn ? (
@@ -94,7 +119,9 @@ const VideoMeetingRoom = () => {
           <button
             onClick={toggleVideo}
             className={`p-4 rounded-full ${
-              isVideoOn ? 'bg-gray-600 hover:bg-gray-700' : 'bg-red-600 hover:bg-red-700'
+              isVideoOn
+                ? "bg-gray-600 hover:bg-gray-700"
+                : "bg-red-600 hover:bg-red-700"
             } transition-colors`}
           >
             {isVideoOn ? (

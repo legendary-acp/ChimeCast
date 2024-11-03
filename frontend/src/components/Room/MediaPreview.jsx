@@ -127,7 +127,7 @@ const MediaPreview = () => {
           {!hasVideo && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400">
               <div className="w-20 h-20 rounded-full bg-orange-600 flex items-center justify-center text-white text-2xl">
-                J
+                P
               </div>
             </div>
           )}

@@ -58,31 +58,34 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	roomID := mux.Vars(r)["roomID"]
 
+	// Check if the room exists and handle potential errors
 	exists, err := h.RoomService.JoinRoom(roomID)
 	if err != nil {
-		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		log.Printf("Error joining room %s: %v", roomID, err)
+		utils.SendJSONError(w, http.StatusBadRequest, "Could not join the room: "+err.Error())
 		return
 	}
 
-	if *exists {
-		utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
-			"message": "Joining room",
-			"roomID":  roomID,
+	// Room existence check
+	if !*exists {
+		log.Printf("Room ID %s does not exist", roomID)
+		utils.WriteJSONResponse(w, http.StatusNotFound, map[string]string{
+			"message": "Room ID does not exist",
 		})
 		return
 	}
 
-	utils.WriteJSONResponse(w, http.StatusNotFound, map[string]string{
-		"message": "Room ID does not exist",
+	// Successful join response
+	log.Printf("User joined room %s successfully", roomID)
+	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "Joining room",
+		"roomID":  roomID,
 	})
-	return
-
 }
 
 func (h *RoomHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// Extract roomID from URL
-	vars := mux.Vars(r)
-	roomID := vars["roomID"]
+	roomID := mux.Vars(r)["roomID"]
 
 	// Upgrade HTTP request to WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -91,11 +94,17 @@ func (h *RoomHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		log.Printf("Closing WebSocket connection for room %s", roomID)
+		conn.Close()
+	}()
 
 	// Inform that a user has joined the room
 	log.Printf("User joined room: %s", roomID)
 
 	// Call the service to handle the WebSocket connection
-	h.RoomService.WebSocketConnection(roomID, conn)
+	if err := h.RoomService.WebSocketConnection(roomID, conn); err != nil {
+		log.Printf("Error handling WebSocket connection for room %s: %v", roomID, err)
+		return
+	}
 }
