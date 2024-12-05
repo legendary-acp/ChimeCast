@@ -1,7 +1,8 @@
 package service
 
 import (
-	"github.com/gorilla/websocket"
+	"sync"
+
 	"github.com/legendary-acp/chimecast/internal/repositories"
 	"github.com/legendary-acp/chimecast/internal/session"
 )
@@ -11,7 +12,9 @@ type AuthService struct {
 	SessionManager *session.SessionManager
 }
 
+// RoomService handles room operations and WebRTC signaling
 type RoomService struct {
 	RoomRepository *repositories.RoomRepository
-	Connections    map[string][]*websocket.Conn
+	Connections    map[string][]*Connection // roomID -> []Connection
+	mu             sync.RWMutex             // For thread-safe operations
 }
