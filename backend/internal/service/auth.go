@@ -38,7 +38,7 @@ func (a *AuthService) RegisterUser(request *models.RegisterRequest) (*string, er
 	if err != nil {
 		return nil, err
 	}
-	sessionID, err := a.SessionManager.CreateSession(user.Username)
+	sessionID, err := a.SessionManager.CreateSession(user.Username, user.ID)
 	if err != nil {
 		return nil, errors.New("could not create session")
 	}
@@ -58,7 +58,7 @@ func (a *AuthService) Login(request *models.LoginRequest) (string, error) {
 	}
 
 	// Generate session
-	sessionID, err := a.SessionManager.CreateSession(user.Username)
+	sessionID, err := a.SessionManager.CreateSession(user.Username, user.ID)
 	if err != nil {
 		return "", errors.New("could not create session")
 	}

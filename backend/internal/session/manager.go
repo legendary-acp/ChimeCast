@@ -10,6 +10,7 @@ import (
 
 type Session struct {
 	UserName  string
+	UserID    string // Added UserID field
 	ExpiresAt time.Time
 }
 
@@ -24,21 +25,21 @@ func NewSessionManager() *SessionManager {
 	}
 }
 
-// CreateSession generates a new session for the given userName
-func (sm *SessionManager) CreateSession(userName string) (string, error) {
+// CreateSession now takes both userName and userID
+func (sm *SessionManager) CreateSession(userName string, userID string) (string, error) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
 	sessionID := uuid.NewString()
 	sm.sessions[sessionID] = &Session{
 		UserName:  userName,
-		ExpiresAt: time.Now().Add(24 * time.Hour), // Session expires after 24 hours
+		UserID:    userID,
+		ExpiresAt: time.Now().Add(24 * time.Hour),
 	}
-
 	return sessionID, nil
 }
 
-// GetSession checks if a session exists and is valid
+// GetSession remains the same
 func (sm *SessionManager) GetSession(sessionID string) (*Session, error) {
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()
@@ -50,7 +51,7 @@ func (sm *SessionManager) GetSession(sessionID string) (*Session, error) {
 	return session, nil
 }
 
-// DeleteSession removes a session
+// DeleteSession remains the same
 func (sm *SessionManager) DeleteSession(sessionID string) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()

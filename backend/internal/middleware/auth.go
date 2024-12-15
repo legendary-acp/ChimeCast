@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/legendary-acp/chimecast/internal/session"
@@ -16,11 +17,18 @@ func AuthMiddleware(sessionManager *session.SessionManager) func(http.Handler) h
 				return
 			}
 
-			_, err = sessionManager.GetSession(cookie.Value)
+			session, err := sessionManager.GetSession(cookie.Value)
 			if err != nil {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
+
+			// Add both userID and username to context
+			ctx := context.WithValue(r.Context(), "userID", session.UserID)
+			ctx = context.WithValue(ctx, "userName", session.UserName)
+
+			// Create new request with the updated context
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})
