@@ -3,13 +3,14 @@ package repositories
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"sort"
 
 	"github.com/legendary-acp/chimecast/internal/models"
 )
 
-func NewRoomRepositor(db *sql.DB) *RoomRepository {
+func NewRoomRepository(db *sql.DB) *RoomRepository {
 	return &RoomRepository{
 		DB: db,
 	}
@@ -17,18 +18,24 @@ func NewRoomRepositor(db *sql.DB) *RoomRepository {
 
 func (r *RoomRepository) GetAllRooms() ([]models.Room, error) {
 	var rooms []models.Room
-
-	rows, err := r.DB.Query("SELECT * FROM rooms")
+	rows, err := r.DB.Query(`
+        SELECT id, name, host_id, created_at, status 
+        FROM rooms
+    `)
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	for rows.Next() {
 		var room models.Room
-
-		if err := rows.Scan(&room.ID, &room.Name, &room.CreatedAt, &room.Status); err != nil {
+		if err := rows.Scan(
+			&room.ID,
+			&room.Name,
+			&room.HostID,
+			&room.CreatedAt,
+			&room.Status,
+		); err != nil {
 			return nil, err
 		}
 		rooms = append(rooms, room)
@@ -38,30 +45,117 @@ func (r *RoomRepository) GetAllRooms() ([]models.Room, error) {
 		return nil, err
 	}
 
+	// Sort active rooms first
 	sort.Slice(rooms, func(i, j int) bool {
-		return rooms[i].Status != 0 && rooms[j].Status == 0
+		return rooms[i].Status == models.RoomStatusActive && rooms[j].Status != models.RoomStatusActive
 	})
 
 	return rooms, nil
 }
 
 func (r *RoomRepository) CreateRoom(room *models.Room) error {
-	_, err := r.DB.Exec("INSERT INTO rooms (ID, Name, CreatedAt, Status) VALUES (?, ?, ?, ?)", room.ID, room.Name, room.CreatedAt, room.Status)
+	_, err := r.DB.Exec(`
+        INSERT INTO rooms (id, name, host_id, created_at, status) 
+        VALUES (?, ?, ?, ?, ?)`,
+		room.ID,
+		room.Name,
+		room.HostID,
+		room.CreatedAt,
+		room.Status,
+	)
 	if err != nil {
-		log.Println("unable to insert room into db: " + err.Error())
-		return errors.New("unable to insert room into db: " + err.Error())
+		log.Printf("Error creating room: %v", err)
+		return fmt.Errorf("failed to create room: %v", err)
 	}
 
-	log.Println("Room created: " + room.Name)
+	log.Printf("Room created: %s (ID: %s)", room.Name, room.ID)
 	return nil
+}
+
+func (r *RoomRepository) GetRoom(roomID string) (*models.Room, error) {
+	var room models.Room
+	err := r.DB.QueryRow(`
+        SELECT id, name, host_id, created_at, status 
+        FROM rooms 
+        WHERE id = ?`,
+		roomID,
+	).Scan(
+		&room.ID,
+		&room.Name,
+		&room.HostID,
+		&room.CreatedAt,
+		&room.Status,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, errors.New("room not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("database error: %v", err)
+	}
+
+	return &room, nil
 }
 
 func (r *RoomRepository) DoesRoomExist(ID string) (*bool, error) {
 	var exists bool
-	err := r.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM rooms WHERE id = ?)", ID).Scan(&exists)
+	err := r.DB.QueryRow(`
+        SELECT EXISTS(
+            SELECT 1 
+            FROM rooms 
+            WHERE id = ?
+        )`,
+		ID,
+	).Scan(&exists)
+
 	if err != nil {
-		return nil, errors.New("database error: " + err.Error())
+		return nil, fmt.Errorf("database error: %v", err)
+	}
+	return &exists, nil
+}
+
+func (r *RoomRepository) UpdateRoomStatus(roomID string, status int) error {
+	result, err := r.DB.Exec(`
+        UPDATE rooms 
+        SET status = ? 
+        WHERE id = ?`,
+		status,
+		roomID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update room status: %v", err)
 	}
 
-	return &exists, nil
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking update result: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("room not found")
+	}
+
+	return nil
+}
+
+func (r *RoomRepository) DeleteRoom(roomID string) error {
+	result, err := r.DB.Exec(`
+        DELETE FROM rooms 
+        WHERE id = ?`,
+		roomID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete room: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("error checking delete result: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("room not found")
+	}
+
+	return nil
 }

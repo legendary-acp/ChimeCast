@@ -23,13 +23,12 @@ func (h *RoomHandler) GetAllRooms(w http.ResponseWriter, r *http.Request) {
 		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
 	utils.WriteJSONResponse(w, http.StatusOK, rooms)
-	return
 }
 
 func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 	var createRoomRequest *models.CreateRoomRequest
+	userID := r.Context().Value("userID").(string) // From auth middleware
 
 	err := json.NewDecoder(r.Body).Decode(&createRoomRequest)
 	if err != nil {
@@ -37,74 +36,143 @@ func (h *RoomHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomID, err := h.RoomService.CreateRoom(createRoomRequest)
+	roomID, err := h.RoomService.CreateRoom(createRoomRequest, userID) // Pass hostID
 	if err != nil {
 		if err.Error() == "name can't be empty" {
 			utils.SendJSONError(w, http.StatusBadRequest, err.Error())
-			return
 		} else {
 			utils.SendJSONError(w, http.StatusInternalServerError, err.Error())
-			return
 		}
+		return
 	}
 
 	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
 		"roomID":  *roomID,
 		"message": "Room created successfully",
+		"role":    "host",
 	})
-	return
 }
 
 func (h *RoomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	roomID := mux.Vars(r)["roomID"]
+	userID := r.Context().Value("userID").(string)
 
-	// Check if the room exists and handle potential errors
-	exists, err := h.RoomService.JoinRoom(roomID)
+	status, err := h.RoomService.JoinRoom(roomID, userID)
 	if err != nil {
 		log.Printf("Error joining room %s: %v", roomID, err)
 		utils.SendJSONError(w, http.StatusBadRequest, "Could not join the room: "+err.Error())
 		return
 	}
 
-	// Room existence check
-	if !*exists {
-		log.Printf("Room ID %s does not exist", roomID)
-		utils.WriteJSONResponse(w, http.StatusNotFound, map[string]string{
-			"message": "Room ID does not exist",
-		})
-		return
-	}
-
-	// Successful join response
-	log.Printf("User joined room %s successfully", roomID)
-	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
-		"message": "Joining room",
+	response := map[string]string{
 		"roomID":  roomID,
-	})
+		"status":  status, // "waiting" or "admitted"
+		"message": "Joined room successfully",
+	}
+	utils.WriteJSONResponse(w, http.StatusOK, response)
 }
 
 func (h *RoomHandler) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
-	// Extract roomID from URL
 	roomID := mux.Vars(r)["roomID"]
+	userID := r.Context().Value("userID").(string)
 
-	// Upgrade HTTP request to WebSocket
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("Failed to upgrade to WebSocket: %v", err)
-		http.Error(w, "Failed to upgrade to WebSocket", http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		log.Printf("Closing WebSocket connection for room %s", roomID)
-		conn.Close()
-	}()
+	defer conn.Close()
 
-	// Inform that a user has joined the room
-	log.Printf("User joined room: %s", roomID)
-
-	// Call the service to handle the WebSocket connection
-	if err := h.RoomService.WebSocketConnection(roomID, conn); err != nil {
-		log.Printf("Error handling WebSocket connection for room %s: %v", roomID, err)
+	// Check if user is admitted to the room
+	isAdmitted, err := h.RoomService.IsUserAdmitted(roomID, userID)
+	if err != nil {
+		log.Printf("Error checking user admission: %v", err)
 		return
 	}
+
+	if !isAdmitted {
+		// If not admitted, put in waiting room queue
+		if err := h.RoomService.HandleWaitingRoom(roomID, userID, conn); err != nil {
+			log.Printf("Error handling waiting room: %v", err)
+		}
+		return
+	}
+
+	// Handle admitted user's WebSocket connection
+	if err := h.RoomService.HandleWebSocket(roomID, userID, conn); err != nil {
+		log.Printf("Error handling WebSocket: %v", err)
+	}
+}
+
+func (h *RoomHandler) GetParticipants(w http.ResponseWriter, r *http.Request) {
+	roomID := mux.Vars(r)["roomID"]
+	userID := r.Context().Value("userID").(string)
+
+	participants, err := h.RoomService.GetParticipants(roomID, userID)
+	if err != nil {
+		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.WriteJSONResponse(w, http.StatusOK, participants)
+}
+
+func (h *RoomHandler) AdmitParticipant(w http.ResponseWriter, r *http.Request) {
+	roomID := mux.Vars(r)["roomID"]
+	participantID := mux.Vars(r)["userID"]
+	hostID := r.Context().Value("userID").(string)
+
+	err := h.RoomService.AdmitParticipant(roomID, participantID, hostID)
+	if err != nil {
+		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "Participant admitted successfully",
+	})
+}
+
+func (h *RoomHandler) LeaveRoom(w http.ResponseWriter, r *http.Request) {
+	roomID := mux.Vars(r)["roomID"]
+	userID := r.Context().Value("userID").(string)
+
+	err := h.RoomService.LeaveRoom(roomID, userID)
+	if err != nil {
+		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "Left room successfully",
+	})
+}
+
+func (h *RoomHandler) DenyParticipant(w http.ResponseWriter, r *http.Request) {
+	roomID := mux.Vars(r)["roomID"]
+	participantID := mux.Vars(r)["userID"]
+	hostID := r.Context().Value("userID").(string)
+
+	err := h.RoomService.DenyParticipant(roomID, participantID, hostID)
+	if err != nil {
+		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.WriteJSONResponse(w, http.StatusOK, map[string]string{
+		"message": "Participant denied successfully",
+	})
+}
+
+func (h *RoomHandler) GetRoomStatus(w http.ResponseWriter, r *http.Request) {
+	roomID := mux.Vars(r)["roomID"]
+	userID := r.Context().Value("userID").(string)
+
+	status, err := h.RoomService.GetRoomStatus(roomID, userID)
+	if err != nil {
+		utils.SendJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.WriteJSONResponse(w, http.StatusOK, status)
 }

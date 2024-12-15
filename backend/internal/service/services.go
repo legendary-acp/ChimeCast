@@ -15,6 +15,7 @@ type AuthService struct {
 // RoomService handles room operations and WebRTC signaling
 type RoomService struct {
 	RoomRepository *repositories.RoomRepository
-	Connections    map[string][]*Connection // roomID -> []Connection
-	mu             sync.RWMutex             // For thread-safe operations
+	mu             sync.RWMutex
+	Connections    map[string]map[string]*Connection // roomID -> userID -> Connection
+	WaitingRoom    map[string]map[string]*Connection // roomID -> userID -> Connection
 }

@@ -26,7 +26,7 @@ func main() {
 	sessionManager := session.NewSessionManager()
 
 	authRepository := repositories.NewAuthRepository(db)
-	roomRepository := repositories.NewRoomRepositor(db)
+	roomRepository := repositories.NewRoomRepository(db)
 
 	authService := service.NewAuthService(authRepository, sessionManager)
 	roomService := service.NewRoomService(roomRepository)
