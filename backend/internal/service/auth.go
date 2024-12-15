@@ -18,10 +18,10 @@ func NewAuthService(authRepositories *repositories.AuthRepository, sessionManage
 	}
 }
 
-func (a *AuthService) RegisterUser(request *models.RegisterRequest) error {
+func (a *AuthService) RegisterUser(request *models.RegisterRequest) (*string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Create a user model instance with the hashed password
@@ -36,9 +36,14 @@ func (a *AuthService) RegisterUser(request *models.RegisterRequest) error {
 
 	err = a.AuthRepository.RegisterUser(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	sessionID, err := a.SessionManager.CreateSession(user.Username)
+	if err != nil {
+		return nil, errors.New("could not create session")
+	}
+
+	return &sessionID, nil
 }
 
 func (a *AuthService) Login(request *models.LoginRequest) (string, error) {

@@ -49,7 +49,7 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 2: Register the user
-	err = a.AuthService.RegisterUser(&userRegisterRequest)
+	sessionID, err := a.AuthService.RegisterUser(&userRegisterRequest)
 	if err != nil {
 		// Log the actual error
 		log.Printf("Error registering user: %v", err)
@@ -70,6 +70,14 @@ func (a *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Step 3: Success response
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    *sessionID,
+		HttpOnly: true,
+		Path:     "/",
+	})
+
 	response := map[string]string{
 		"message": "User registered successfully",
 	}
