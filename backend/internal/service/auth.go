@@ -70,3 +70,10 @@ func (a *AuthService) Logout(sessionID string) error {
 	a.SessionManager.DeleteSession(sessionID)
 	return nil
 }
+
+func (a *AuthService) ValidateAuth(sessionID string) error {
+	// Get and validate session
+	_, err := a.SessionManager.GetSession(sessionID)
+
+	return err
+}

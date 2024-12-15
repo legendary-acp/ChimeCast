@@ -22,6 +22,7 @@ func NewRouter(
 	authAPIsV1.HandleFunc("/register", authHandler.Register).Methods("POST")
 	authAPIsV1.HandleFunc("/login", authHandler.Login).Methods("POST")
 	authAPIsV1.HandleFunc("/logout", authHandler.Logout).Methods("POST")
+	authAPIsV1.HandleFunc("/validate", authHandler.ValidateAuth).Methods("GET")
 
 	// Room routes with additional endpoints
 	roomAPIsV1 := router.PathPrefix("/api/room/v1").Subrouter()

@@ -137,3 +137,31 @@ func (a *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	utils.WriteJSONResponse(w, http.StatusOK, response)
 }
+
+func (a *AuthHandler) ValidateAuth(w http.ResponseWriter, r *http.Request) {
+	// Get session cookie
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		utils.WriteJSONResponse(w, http.StatusUnauthorized, map[string]string{
+			"message": "No session found",
+		})
+		return
+	}
+
+	// Validate session ID
+	sessionID := cookie.Value
+	err = a.AuthService.ValidateAuth(sessionID)
+	if err != nil {
+		utils.WriteJSONResponse(w, http.StatusUnauthorized, map[string]string{
+			"message": "Invalid session",
+		})
+		return
+	}
+
+	// Return success response
+	response := map[string]interface{}{
+		"message":         "Session valid",
+		"isAuthenticated": true,
+	}
+	utils.WriteJSONResponse(w, http.StatusOK, response)
+}
