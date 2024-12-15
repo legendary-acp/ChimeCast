@@ -19,7 +19,7 @@ func NewRoomRepository(db *sql.DB) *RoomRepository {
 func (r *RoomRepository) GetAllRooms() ([]models.Room, error) {
 	var rooms []models.Room
 	rows, err := r.DB.Query(`
-        SELECT id, name, host_id, created_at, status 
+        SELECT ID, Name, HostID, CreatedAt, Status 
         FROM rooms
     `)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *RoomRepository) GetAllRooms() ([]models.Room, error) {
 
 func (r *RoomRepository) CreateRoom(room *models.Room) error {
 	_, err := r.DB.Exec(`
-        INSERT INTO rooms (id, name, host_id, created_at, status) 
+        INSERT INTO rooms (ID, Name, HostID, CreatedAt, Status) 
         VALUES (?, ?, ?, ?, ?)`,
 		room.ID,
 		room.Name,
@@ -75,7 +75,7 @@ func (r *RoomRepository) CreateRoom(room *models.Room) error {
 func (r *RoomRepository) GetRoom(roomID string) (*models.Room, error) {
 	var room models.Room
 	err := r.DB.QueryRow(`
-        SELECT id, name, host_id, created_at, status 
+       	SELECT ID, Name, HostID, CreatedAt, Status 
         FROM rooms 
         WHERE id = ?`,
 		roomID,
