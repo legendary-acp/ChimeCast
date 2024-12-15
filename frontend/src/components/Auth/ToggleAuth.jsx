@@ -3,7 +3,7 @@ import Login from './Login';
 import Register from './Register';
 
 export default function ToggleAuth() {
-  const [isRegister, setIsRegister] = useState(true);
+  const [isRegister, setIsRegister] = useState(false);
 
   const toggleScreen = () => setIsRegister(!isRegister);
 

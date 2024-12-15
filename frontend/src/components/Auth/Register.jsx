@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import { register } from "../../services/authService";
 
 export default function Register() {
+  const navigate = useNavigate(); // Add this hook
   const [formData, setFormData] = useState({
     name: '',      // Change to lowercase
     username: '',  // Change to lowercase
@@ -29,7 +31,7 @@ export default function Register() {
     try {
       const response = await register(formData.name, formData.username, formData.email, formData.password);
       setSuccess(response.message || "Registration successful!"); // Handle success message
-      // Optionally, redirect the user or clear the form
+      navigate('/rooms'); // Add navigation after successful registration
     } catch (error) {
       setError(error); // Handle error message
     }

@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { login } from "../../services/authService"; // Make sure to import your login function
+import { login } from "../../services/authService";
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 export default function Login() {
+  const navigate = useNavigate(); // Add this hook
   const [formData, setFormData] = useState({
-    username: '', // Change to username
-    password: '', // Change to password
+    username: '',
+    password: '',
   });
 
-  const [error, setError] = useState(null); // To handle error messages
-  const [success, setSuccess] = useState(null); // To handle success messages
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,18 +21,16 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
-
-    setError(null); // Reset error message
-    setSuccess(null); // Reset success message
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     try {
-      const response = await login(formData.username, formData.password); // Call your login function
-      setSuccess(response.message || "Login successful!"); // Handle success message
-      // Optionally, redirect the user or clear the form
-    } catch (error) {
-      // Set error to a string
-      setError(error.message || "An unknown error occurred"); // Ensure error is a string
+      const response = await login(formData.username, formData.password);
+      setSuccess(response.message || "Login successful!");
+      navigate('/rooms'); // Add navigation after successful login
+    } catch (err) {
+      setError(err.message || "An error occurred during login");
     }
   };
 
@@ -44,20 +44,20 @@ export default function Login() {
       </div>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        {error && <p className="text-red-500">{error}</p>} {/* Display error message */}
-        {success && <p className="text-green-500">{success}</p>} {/* Display success message */}
-
+        {error && <p className="text-red-500">{error}</p>}
+        {success && <p className="text-green-500">{success}</p>}
+        
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-gray-900">
             Username
           </label>
           <input
             id="username"
-            name="username" // Ensure this matches formData key
-            type="text" // Change to text
+            name="username"
+            type="text"
             required
             autoComplete="username"
-            value={formData.username} // Ensure this matches formData key
+            value={formData.username}
             onChange={handleChange}
             className="mt-2 block w-full rounded-md border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
@@ -69,11 +69,11 @@ export default function Login() {
           </label>
           <input
             id="password"
-            name="password" // Ensure this matches formData key
+            name="password"
             type="password"
             required
             autoComplete="current-password"
-            value={formData.password} // Ensure this matches formData key
+            value={formData.password}
             onChange={handleChange}
             className="mt-2 block w-full rounded-md border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           />
